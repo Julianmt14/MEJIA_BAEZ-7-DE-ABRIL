@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Académico — Spring Boot + JPA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Code+Pro:wght@400;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-inner">
+        <div class="logo">SistemaAcadémico</div>
+        <ul>
+            <li><a href="#" onclick="switchTab('tab-docs')">📖 Documentación</a></li>
+            <li><a href="#" onclick="switchTab('tab-docentes')">👨‍🏫 Docentes</a></li>
+            <li><a href="#" onclick="switchTab('tab-cursos')">📚 Cursos</a></li>
+            <li><a href="#" onclick="switchTab('tab-estudiantes')">🎓 Estudiantes</a></li>
+            <li><a href="#" onclick="switchTab('tab-carnets')">🪪 Carnets</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Sistema <span>Académico</span></h1>
+    <p>Spring Boot 3 + JPA/Hibernate + PostgreSQL. Documentación educativa y gestión CRUD en tiempo real.</p>
+    <div class="badge-row">
+        <span class="badge spring">☘ Spring Boot 3.2</span>
+        <span class="badge jpa">⚡ JPA / Hibernate</span>
+        <span class="badge pg">🐘 PostgreSQL</span>
+        <span class="badge mvc">◈ MVC Pattern</span>
+    </div>
+</section>
+
+<!-- STATUS BAR -->
+<div class="tabs-container">
+    <div class="status-bar">
+        <div class="status-dot offline" id="statusDot"></div>
+        <span id="statusText">Verificando conexión con el backend...</span>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-docs" onclick="switchTab('tab-docs')">📖 Documentación</button>
+        <button class="tab-btn" data-tab="tab-docentes" onclick="switchTab('tab-docentes')">👨‍🏫 Docentes</button>
+        <button class="tab-btn" data-tab="tab-cursos" onclick="switchTab('tab-cursos')">📚 Cursos</button>
+        <button class="tab-btn" data-tab="tab-estudiantes" onclick="switchTab('tab-estudiantes')">🎓 Estudiantes</button>
+        <button class="tab-btn" data-tab="tab-carnets" onclick="switchTab('tab-carnets')">🪪 Carnets</button>
+    </div>
+
+    <!-- ==================== TAB: DOCUMENTACIÓN ==================== -->
+    <div class="tab-content active" id="tab-docs">
+        <div class="section-title"><span class="num">01</span>Patrón MVC</div>
+        <p class="section-sub">Model — View — Controller separa responsabilidades en tres capas.</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Model (Entidades JPA)</h3>
+                <p>Las clases anotadas con <code>@Entity</code> se mapean a tablas de la BD.</p>
+                <ul><li>Docente.java</li><li>Curso.java</li><li>Estudiante.java</li><li>Carnet.java</li></ul>
+            </div>
+            <div class="card">
+                <h3>Controller (REST API)</h3>
+                <p>Los <code>@RestController</code> reciben peticiones HTTP y delegan al Service.</p>
+                <ul><li>DocenteController</li><li>CursoController</li><li>EstudianteController</li><li>CarnetController</li></ul>
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top:3rem"><span class="num">02</span>Modelo de Base de Datos</div>
+        <p class="section-sub">4 entidades del dominio académico con sus relaciones.</p>
+        <div class="er-diagram">
+            <span class="ent">DOCENTE</span> ——< <span class="rel">1:N</span> >—— <span class="ent">CURSO</span><br>
+            <span class="ent">ESTUDIANTE</span> ——< <span class="rel">1:1</span> >—— <span class="ent">CARNET</span><br>
+            <span class="ent">ESTUDIANTE</span> ——< <span class="rel">N:M</span> >—— <span class="ent">CURSO</span><br>
+            <span style="color:var(--text-dim);font-size:0.78rem">Tabla intermedia: estudiante_curso</span>
+        </div>
+
+        <div class="section-title" style="margin-top:3rem"><span class="num">03</span>Relaciones JPA</div>
+        <p class="section-sub">@OneToMany, @ManyToOne, @OneToOne, @ManyToMany</p>
+        <div class="card">
+            <h3>@OneToMany / @ManyToOne — Docente ↔ Curso</h3>
+            <pre><code><span class="cm">// Docente.java</span>
+<span class="ann">@OneToMany</span>(mappedBy = <span class="str">"docente"</span>, cascade = CascadeType.<span class="fn">ALL</span>)
+<span class="kw">private</span> List&lt;Curso&gt; cursos;
+
+<span class="cm">// Curso.java (dueño)</span>
+<span class="ann">@ManyToOne</span>(fetch = FetchType.<span class="fn">LAZY</span>)
+<span class="ann">@JoinColumn</span>(name = <span class="str">"docente_id"</span>)
+<span class="kw">private</span> Docente docente;</code></pre>
+        </div>
+        <div class="card">
+            <h3>@OneToOne — Estudiante ↔ Carnet</h3>
+            <pre><code><span class="cm">// Estudiante.java</span>
+<span class="ann">@OneToOne</span>(mappedBy = <span class="str">"estudiante"</span>, cascade = CascadeType.<span class="fn">ALL</span>)
+<span class="kw">private</span> Carnet carnet;
+
+<span class="cm">// Carnet.java (dueño)</span>
+<span class="ann">@OneToOne</span>
+<span class="ann">@JoinColumn</span>(name = <span class="str">"estudiante_id"</span>, unique = <span class="kw">true</span>)
+<span class="kw">private</span> Estudiante estudiante;</code></pre>
+        </div>
+        <div class="card">
+            <h3>@ManyToMany — Estudiante ↔ Curso</h3>
+            <pre><code><span class="cm">// Estudiante.java (dueño)</span>
+<span class="ann">@ManyToMany</span>
+<span class="ann">@JoinTable</span>(name = <span class="str">"estudiante_curso"</span>,
+  joinColumns = <span class="ann">@JoinColumn</span>(name = <span class="str">"estudiante_id"</span>),
+  inverseJoinColumns = <span class="ann">@JoinColumn</span>(name = <span class="str">"curso_id"</span>))
+<span class="kw">private</span> List&lt;Curso&gt; cursos;</code></pre>
+        </div>
+
+        <div class="section-title" style="margin-top:3rem"><span class="num">04</span>Conexión PostgreSQL</div>
+        <p class="section-sub">Configuración de application.properties</p>
+        <div class="card">
+            <h3>application.properties</h3>
+            <pre><code><span class="ann">spring.datasource.url</span>=<span class="str">jdbc:postgresql://localhost:5432/sistema_academico</span>
+<span class="ann">spring.datasource.username</span>=<span class="str">postgres</span>
+<span class="ann">spring.datasource.password</span>=<span class="str">tu_contraseña</span>
+<span class="ann">spring.jpa.hibernate.ddl-auto</span>=<span class="str">update</span>
+<span class="ann">spring.jpa.show-sql</span>=<span class="str">true</span></code></pre>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: DOCENTES ==================== -->
+    <div class="tab-content" id="tab-docentes">
+        <div class="crud-header">
+            <h2>👨‍🏫 Gestión de Docentes</h2>
+            <button class="btn btn-primary" onclick="openModal('modalDocente')">+ Nuevo Docente</button>
+        </div>
+        <div class="data-table">
+            <table>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Especialidad</th><th>Cursos</th><th>Acciones</th></tr></thead>
+                <tbody id="docentesBody">
+                    <tr><td colspan="6"><div class="empty-state"><div class="icon">👨‍🏫</div><p>Selecciona esta pestaña para cargar los datos</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: CURSOS ==================== -->
+    <div class="tab-content" id="tab-cursos">
+        <div class="crud-header">
+            <h2>📚 Gestión de Cursos</h2>
+            <button class="btn btn-primary" onclick="loadDocentesSelect(); openModal('modalCurso')">+ Nuevo Curso</button>
+        </div>
+        <div class="data-table">
+            <table>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Créditos</th><th>Docente</th><th>Acciones</th></tr></thead>
+                <tbody id="cursosBody">
+                    <tr><td colspan="6"><div class="empty-state"><div class="icon">📚</div><p>Selecciona esta pestaña para cargar los datos</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: ESTUDIANTES ==================== -->
+    <div class="tab-content" id="tab-estudiantes">
+        <div class="crud-header">
+            <h2>🎓 Gestión de Estudiantes</h2>
+            <button class="btn btn-primary" onclick="openModal('modalEstudiante')">+ Nuevo Estudiante</button>
+        </div>
+        <div class="data-table">
+            <table>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Nacimiento</th><th>Cursos</th><th>Carnet</th><th>Acciones</th></tr></thead>
+                <tbody id="estudiantesBody">
+                    <tr><td colspan="7"><div class="empty-state"><div class="icon">🎓</div><p>Selecciona esta pestaña para cargar los datos</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== TAB: CARNETS ==================== -->
+    <div class="tab-content" id="tab-carnets">
+        <div class="crud-header">
+            <h2>🪪 Gestión de Carnets</h2>
+            <button class="btn btn-primary" onclick="loadEstudiantesSelect(); openModal('modalCarnet')">+ Nuevo Carnet</button>
+        </div>
+        <div class="data-table">
+            <table>
+                <thead><tr><th>ID</th><th>Código</th><th>Emisión</th><th>Expiración</th><th>Estudiante</th><th>Acciones</th></tr></thead>
+                <tbody id="carnetsBody">
+                    <tr><td colspan="6"><div class="empty-state"><div class="icon">🪪</div><p>Selecciona esta pestaña para cargar los datos</p></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODALES ==================== -->
+
+<!-- Modal Docente -->
+<div class="modal-overlay" id="modalDocente">
+    <div class="modal">
+        <h3>Docente</h3>
+        <form onsubmit="saveDocente(event)">
+            <input type="hidden" name="id">
+            <div class="form-group"><label>Nombre</label><input type="text" name="nombre" required></div>
+            <div class="form-group"><label>Apellido</label><input type="text" name="apellido" required></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" required></div>
+            <div class="form-group"><label>Especialidad</label><input type="text" name="especialidad" required></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('modalDocente')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Curso -->
+<div class="modal-overlay" id="modalCurso">
+    <div class="modal">
+        <h3>Curso</h3>
+        <form onsubmit="saveCurso(event)">
+            <input type="hidden" name="id">
+            <div class="form-group"><label>Nombre del curso</label><input type="text" name="cursoNombre" required></div>
+            <div class="form-group"><label>Descripción</label><textarea name="descripcion" rows="2"></textarea></div>
+            <div class="form-group"><label>Créditos</label><input type="number" name="creditos" min="1" max="10" required></div>
+            <div class="form-group"><label>Docente</label><select name="cursoDocente" id="cursoDocente" required><option value="">Cargando...</option></select></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('modalCurso')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Estudiante -->
+<div class="modal-overlay" id="modalEstudiante">
+    <div class="modal">
+        <h3>Estudiante</h3>
+        <form onsubmit="saveEstudiante(event)">
+            <input type="hidden" name="id">
+            <div class="form-group"><label>Nombre</label><input type="text" name="estNombre" required></div>
+            <div class="form-group"><label>Apellido</label><input type="text" name="estApellido" required></div>
+            <div class="form-group"><label>Email</label><input type="email" name="estEmail" required></div>
+            <div class="form-group"><label>Fecha de nacimiento</label><input type="date" name="fechaNacimiento" required></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('modalEstudiante')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Carnet -->
+<div class="modal-overlay" id="modalCarnet">
+    <div class="modal">
+        <h3>Carnet</h3>
+        <form onsubmit="saveCarnet(event)">
+            <div class="form-group"><label>Código</label><input type="text" name="codigo" placeholder="CRN-2024-001" required></div>
+            <div class="form-group"><label>Fecha de emisión</label><input type="date" name="fechaEmision" required></div>
+            <div class="form-group"><label>Fecha de expiración</label><input type="date" name="fechaExpiracion" required></div>
+            <div class="form-group"><label>Estudiante</label><select name="carnetEstudiante" id="carnetEstudiante" required><option value="">Cargando...</option></select></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="closeModal('modalCarnet')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <p>Sistema Académico — Spring Boot 3.2 + JPA + PostgreSQL — 2026</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
