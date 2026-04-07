@@ -52,6 +52,9 @@ public class CursoService {
     }
 
     public void eliminar(Long id) {
+        if (!cursoRepository.existsById(id)) {
+            throw new RuntimeException("Curso no encontrado con id: " + id);
+        }
         cursoRepository.deleteById(id);
     }
 }
